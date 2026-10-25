@@ -19,7 +19,7 @@ sola batterie, soglia, interruttori e orari. Niente entità da mappare a mano.
 
 ## 📸 Anteprima
 
-![Anteprima Card](antepri.PNG)
+![Anteprima Card](anteprima.PNG)
 
 ## ✨ Caratteristiche
 
