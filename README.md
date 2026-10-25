@@ -17,6 +17,10 @@ d'allarme e le scorciatoie alle notifiche.
 Si **auto-configura**: scegli il dispositivo dell'integrazione e la card pesca da
 sola batterie, soglia, interruttori e orari. Niente entità da mappare a mano.
 
+## 📸 Anteprima
+
+![Anteprima Card](antepri.PNG)
+
 ## ✨ Caratteristiche
 
 - 🔌 **Zero configurazione**: basta scegliere il dispositivo, il resto è automatico.
