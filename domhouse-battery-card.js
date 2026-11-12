@@ -4,7 +4,7 @@
  *  Si auto-configura dal dispositivo dell'integrazione Centro Controllo Batterie:
  *  basta scegliere il dispositivo e la card pesca batterie, soglia, switch e orari.
  */
-const CARD_VERSION = "3.0";
+const CARD_VERSION = "3.1";
 const CCB_DOMAIN = "centro_controllo_batterie";
 
 console.info(
@@ -21,6 +21,7 @@ const ICON = {
   alexa: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>`,
   push: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 8-3 8h18s-3-1-3-8"/><path d="M10.5 20a2 2 0 0 0 3 0"/></svg>`,
   clock: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2" stroke-linecap="round"/></svg>`,
+  batt: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="8" width="15" height="9" rx="2"/><line x1="20.5" y1="11" x2="20.5" y2="14"/></svg>`,
   chev: `<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>`,
   sliders: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><circle cx="10" cy="9" r="2.3" fill="var(--card-background-color,#fff)"/><circle cx="15" cy="15" r="2.3" fill="var(--card-background-color,#fff)"/></svg>`,
 };
@@ -90,7 +91,13 @@ ha-card{ overflow:hidden; }
 .foldhead::-webkit-details-marker{ display:none; }
 .foldhead>svg{ width:18px;height:18px;flex:none; }
 .foldhead .chev{ margin-left:auto;transition:transform .2s; }
-details[open] .foldhead .chev{ transform:rotate(180deg); }
+details[open] > .foldhead .chev{ transform:rotate(180deg); }
+.foldhead:hover{ color:var(--ccb-accent); }
+.foldhead .count{ font-size:11px;font-weight:700;letter-spacing:0;text-transform:none;color:var(--primary-text-color);background:var(--ccb-track);border-radius:999px;padding:2px 8px;font-variant-numeric:tabular-nums; }
+.foldhead .lowtag{ font-size:11px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ccb-crit); }
+.battfold .list{ padding-top:0; }
+.battfold .grid{ padding-top:0; }
+.battfold .legend{ padding-bottom:14px; }
 .settings{ display:flex;flex-direction:column;gap:14px;padding:4px 16px 16px; }
 .srow{ display:flex;flex-direction:column;gap:7px; }
 .srow>.lbl{ font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ccb-muted); }
@@ -138,6 +145,7 @@ class DomHouseBatteryCard extends HTMLElement {
       show_legend: config.show_legend ?? true,
       collapsible: config.collapsible ?? true,
       collapsed: config.collapsed ?? true,
+      list_collapsed: config.list_collapsed ?? true,
       accent: config.accent || null,
       // override manuali opzionali (uso avanzato / senza integrazione)
       sensor: config.sensor || null,
@@ -297,8 +305,10 @@ class DomHouseBatteryCard extends HTMLElement {
       <div class="head"><div class="logo">${ICON.logo}</div><div class="titles"><h1>${this._esc(this._cfg.title)}</h1><span>${this._esc(this._cfg.subtitle)}</span></div><div class="pill ok" id="pill"><span class="dot"></span><span id="pillt"></span></div></div>
       <div class="summary"><div class="stat"><b id="sTot">0</b><small>monitorate</small></div><div class="stat"><b id="sLow">0</b><small>scariche</small></div><div class="stat"><b id="sThr">—</b><small>soglia</small></div></div>
       <div class="divider"></div>
-      <div id="body"></div>
-      ${legend}
+      <details class="fold battfold"${this._cfg.list_collapsed ? "" : " open"}><summary class="foldhead">${ICON.batt}<span>Elenco batterie</span><span class="count" id="bCount">0</span><span class="lowtag" id="bLow"></span>${ICON.chev}</summary>
+        <div id="body"></div>
+        ${legend}
+      </details>
       ${block}
     </ha-card>`;
   }
@@ -361,6 +371,8 @@ class DomHouseBatteryCard extends HTMLElement {
 
     this._$("sTot").textContent = bats.length;
     this._$("sLow").textContent = low;
+    this._$("bCount").textContent = bats.length;
+    this._$("bLow").textContent = low ? low + (low === 1 ? " scarica" : " scariche") : "";
     this._$("sThr").textContent = this._threshold() + "%";
 
     const pill = this._$("pill"), pt = this._$("pillt");
@@ -415,7 +427,8 @@ const LABELS = {
   layout_toggle: "Mostra selettore Lista/Griglia",
   show_legend: "Mostra legenda",
   collapsible: "Impostazioni a scomparsa",
-  collapsed: "Chiusa di default",
+  collapsed: "Impostazioni chiuse di default",
+  list_collapsed: "Elenco batterie chiuso di default",
 };
 
 const SCHEMA = [
@@ -427,6 +440,7 @@ const SCHEMA = [
     { name: "show_legend", selector: { boolean: {} } },
     { name: "collapsible", selector: { boolean: {} } },
     { name: "collapsed", selector: { boolean: {} } },
+    { name: "list_collapsed", selector: { boolean: {} } },
   ] },
 ];
 
