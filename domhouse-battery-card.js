@@ -480,5 +480,5 @@ window.customCards.push({
   name: "DomHouse Battery Card",
   description: "Centro Controllo Batterie — si auto-configura dal dispositivo (DomHouse.it)",
   preview: true,
-  documentationURL: "https://github.com/SalvatoreITA/domhouse-battery-card",
+  documentationURL: "https://github.com/SalvatoreITA/Centro-Controllo-Batterie-Card",
 });
